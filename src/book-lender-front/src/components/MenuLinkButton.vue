@@ -6,7 +6,7 @@ export default {
 }
 </script>
 <template>
-    <router-link class="btn btn-primary" role="button" v-bind="$props">
+    <router-link class="btn btn-success opacity-75" role="button" v-bind="$props">
         <slot />
     </router-link>
 </template>
