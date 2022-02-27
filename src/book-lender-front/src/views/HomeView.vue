@@ -1,7 +1,8 @@
-<script setup>
+<script setup lang="ts">
+import MenuLinkButton from '../components/MenuLinkButton.vue'
 </script>
 
 <template>
   <h1>Home page</h1>
-  <MenuLinkButton :to="{ name: 'lend-book' }">Lend a book</MenuLinkButton>
+  <MenuLinkButton to="/lend">Lend a book</MenuLinkButton>
 </template>
