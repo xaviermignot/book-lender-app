@@ -1,0 +1,52 @@
+@isbn=""
+@user=""
+
+# P1
+
+### Search for a book globally by ISBN
+GET {{baseUrl}}/v1/books?isbn={{isbn}}
+
+### Add a book to the collection
+POST {{baseUrl}}/v1/books
+Content-Type: application/json
+
+{
+  "isbn": "",
+  "author": "",
+  "title": "",
+  "coverLink": ""
+}
+
+### Lend a book to a user
+@bookId=""
+PUT {{baseUrl}}/v1/{{bookId}}
+Content-Type: application/json
+
+{
+  "lentTo": "{{user}}"
+}
+
+### List the users
+GET {{baseUrl}}/v1/users
+
+### Register a book back
+@bookId=""
+PUT {{baseUrl}}/v1/{{bookId}}
+Content-Type: application/json
+
+{
+  "lentTo": null
+}
+
+# P2
+
+### List the books of a user
+GET {{baseUrl}}/v1/books?user={{user}}
+
+### Search for a user
+
+# P3
+
+### Add a user
+
+### List the books lent to a user
