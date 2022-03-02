@@ -1,12 +1,20 @@
+resource "random_pet" "suffix" {
+  length = 1
+}
+
+locals {
+  project = "book-lender-${random_pet.suffix.id}"
+}
+
 resource "azurerm_resource_group" "rg" {
-  name     = "rg-${var.project}"
+  name     = "rg-${local.project}"
   location = var.location
 }
 
-module "book_lender" {
-  source = "./book_lender"
+module "cosmosdb" {
+  source = "./cosmosdb"
 
   rg_name  = azurerm_resource_group.rg.name
   location = var.location
-  project  = var.project
+  project  = local.project
 }
