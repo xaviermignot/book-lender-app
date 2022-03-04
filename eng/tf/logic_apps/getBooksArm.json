@@ -1,0 +1,137 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "logicAppName": {
+            "type": "String"
+        },
+        "cosmosConnectionName": {
+            "type": "String",
+            "defaultValue": "documentdb"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('logicAppName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "manual": {
+                            "type": "Request",
+                            "kind": "Http",
+                            "inputs": {
+                                "method": "GET",
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "actions": {
+                        "CallGoogleBooksApi": {
+                            "runAfter": {
+                                "ExtractIsbn": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Http",
+                            "inputs": {
+                                "method": "GET",
+                                "uri": "https://www.googleapis.com/books/v1/volumes?q=isbn:@{variables('isbn')}"
+                            }
+                        },
+                        "ExtractAuthor": {
+                            "runAfter": {
+                                "ExtractTitle": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "author",
+                                        "type": "string",
+                                        "value": "@{join(first(body('CallGoogleBooksApi')?['items'])?['volumeInfo']?['authors'], ',')}"
+                                    }
+                                ]
+                            }
+                        },
+                        "ExtractIsbn": {
+                            "runAfter": {},
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "isbn",
+                                        "type": "string",
+                                        "value": "@triggerOutputs()?['queries']?['isbn']"
+                                    }
+                                ]
+                            }
+                        },
+                        "ExtractTitle": {
+                            "runAfter": {
+                                "CallGoogleBooksApi": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "title",
+                                        "type": "string",
+                                        "value": "@{first(body('CallGoogleBooksApi')?['items'])?['volumeInfo']?['title']}"
+                                    }
+                                ]
+                            }
+                        },
+                        "SendResponse": {
+                            "runAfter": {
+                                "ExtractAuthor": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Response",
+                            "kind": "Http",
+                            "inputs": {
+                                "body": {
+                                    "author": "@variables('author')",
+                                    "title": "@variables('title')"
+                                },
+                                "headers": {
+                                    "Content-Type": "application/json"
+                                },
+                                "statusCode": "@outputs('CallGoogleBooksApi')['statusCode']"
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "[parameters('cosmosConnectionName')]": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('cosmosConnectionName'))]",
+                                "connectionName": "[parameters('cosmosConnectionName')]",
+                                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/', parameters('cosmosConnectionName'))]"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
