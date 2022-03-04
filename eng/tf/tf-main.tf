@@ -39,9 +39,9 @@ module "logic_app" {
   location = var.location
   project  = local.project
 
-  name                = "get-books-from-tf"
+  name                = "get-book-by-isbn"
   msi_id              = module.logic_app_base.msi.id
   cosmosdb_connection = module.logic_app_base.cosmosdb_connection
 
-  logic_app_workflow_arm = file("${path.module}/logic_apps/getBooksArm.json")
+  logic_app_workflow_arm = file("${path.module}/logic_apps/getBookByIsbnArm.json")
 }
