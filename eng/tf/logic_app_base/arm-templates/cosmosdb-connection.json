@@ -1,0 +1,43 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "accountName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Cosmos DB account"
+            }
+        }
+    },
+    "variables": {
+        "connectionName": "documentdb"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[variables('connectionName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "displayName": "ala-connection-cdb",
+                "parameterValues": {
+                    "databaseAccount": "[parameters('accountName')]",
+                    "accessKey": "[listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('accountName')), '2015-04-08').primaryMasterKey]"
+                },
+                "api": {
+                    "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/', variables('connectionName'))]"
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "connection": {
+            "type": "object",
+            "value": {
+                "connectionId": "[resourceId('Microsoft.Web/connections', variables('connectionName'))]",
+                "connectionName": "[variables('connectionName')]",
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/', variables('connectionName'))]"
+            }
+        }
+    }
+}
