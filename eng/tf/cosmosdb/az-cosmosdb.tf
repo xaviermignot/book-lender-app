@@ -18,7 +18,7 @@ resource "azurerm_cosmosdb_account" "cosmos_account" {
 }
 
 resource "azurerm_cosmosdb_sql_database" "cosmos_database" {
-  name                = "db-${var.project}"
+  name                = "db-book-lender"
   resource_group_name = var.rg_name
   account_name        = azurerm_cosmosdb_account.cosmos_account.name
 }
