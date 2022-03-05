@@ -4,6 +4,11 @@ resource "random_pet" "suffix" {
 
 locals {
   project = "book-lender-${random_pet.suffix.id}"
+
+  logic_apps = {
+    "get-book-by-isbn" = "getBookByIsbnArm.json",
+    "post-book"        = "postBookArm.json"
+  }
 }
 
 resource "azurerm_resource_group" "rg" {
@@ -33,15 +38,16 @@ module "logic_app_base" {
 }
 
 module "logic_app" {
+  for_each = local.logic_apps
   source = "./logic_app"
 
   rg_name  = azurerm_resource_group.rg.name
   location = var.location
   project  = local.project
 
-  name                = "get-book-by-isbn"
+  name                = each.key
   msi_id              = module.logic_app_base.msi.id
   cosmosdb_connection = module.logic_app_base.cosmosdb_connection
 
-  logic_app_workflow_arm = file("${path.module}/logic_apps/getBookByIsbnArm.json")
+  logic_app_workflow_arm = file("${path.module}/logic_apps/${each.value}")
 }

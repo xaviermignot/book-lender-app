@@ -1,26 +1,28 @@
-@isbn=""
+@isbn=9782200611583
 @user=""
 
 # P1
 
 ### Search for a book globally by ISBN
 GET {{baseUrl}}/v1/books?isbn={{isbn}}
+Ocp-Apim-Subscription-Key: {{apimKey}}
 
 ### Add a book to the collection
 POST {{baseUrl}}/v1/books
 Content-Type: application/json
+Ocp-Apim-Subscription-Key: {{apimKey}}
 
 {
-  "isbn": "",
-  "author": "",
-  "title": "",
-  "coverLink": ""
+  "isbn": "9782200611583",
+  "author": "Christophe",
+  "title": "L'album Christophe"
 }
 
 ### Lend a book to a user
 @bookId=""
 PUT {{baseUrl}}/v1/{{bookId}}
 Content-Type: application/json
+Ocp-Apim-Subscription-Key: {{apimKey}}
 
 {
   "lentTo": "{{user}}"
