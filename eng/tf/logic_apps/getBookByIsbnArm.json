@@ -39,7 +39,7 @@
                         }
                     },
                     "actions": {
-                        "Condition": {
+                        "CheckExistenceInCosmosDb": {
                             "actions": {
                                 "CallGoogleBooksApi": {
                                     "runAfter": {},
@@ -49,31 +49,74 @@
                                         "uri": "https://www.googleapis.com/books/v1/volumes?q=isbn:@{variables('isbn')}"
                                     }
                                 },
-                                "SetAlreadySavedToFalse": {
+                                "CheckResultFromGoogleBooksApi": {
+                                    "actions": {
+                                        "SetAlreadySavedToFalse": {
+                                            "runAfter": {
+                                                "SetAuthorFromGoogle": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "SetVariable",
+                                            "inputs": {
+                                                "name": "alreadySaved",
+                                                "value": "@false"
+                                            }
+                                        },
+                                        "SetAuthorFromGoogle": {
+                                            "runAfter": {
+                                                "SetTitleFromGoogle": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "SetVariable",
+                                            "inputs": {
+                                                "name": "author",
+                                                "value": "@{join(first(body('CallGoogleBooksApi')?['items'])?['volumeInfo']?['authors'], ',')}"
+                                            }
+                                        },
+                                        "SetTitleFromGoogle": {
+                                            "runAfter": {},
+                                            "type": "SetVariable",
+                                            "inputs": {
+                                                "name": "title",
+                                                "value": "@{first(body('CallGoogleBooksApi')?['items'])?['volumeInfo']?['title']}"
+                                            }
+                                        }
+                                    },
                                     "runAfter": {
-                                        "SetAuthorFromGoogle": [
+                                        "SetGoogleResultCount": [
                                             "Succeeded"
                                         ]
                                     },
-                                    "type": "SetVariable",
-                                    "inputs": {
-                                        "name": "alreadySaved",
-                                        "value": "@false"
-                                    }
-                                },
-                                "SetAuthorFromGoogle": {
-                                    "runAfter": {
-                                        "SetTitleFromGoogle": [
-                                            "Succeeded"
+                                    "else": {
+                                        "actions": {
+                                            "Response": {
+                                                "runAfter": {},
+                                                "type": "Response",
+                                                "kind": "Http",
+                                                "inputs": {
+                                                    "headers": {
+                                                        "Reason-Phrase": "The book was not found"
+                                                    },
+                                                    "statusCode": 404
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "expression": {
+                                        "and": [
+                                            {
+                                                "greater": [
+                                                    "@variables('googleResultCount')",
+                                                    0
+                                                ]
+                                            }
                                         ]
                                     },
-                                    "type": "SetVariable",
-                                    "inputs": {
-                                        "name": "author",
-                                        "value": "@{join(first(body('CallGoogleBooksApi')?['items'])?['volumeInfo']?['authors'], ',')}"
-                                    }
+                                    "type": "If"
                                 },
-                                "SetTitleFromGoogle": {
+                                "SetGoogleResultCount": {
                                     "runAfter": {
                                         "CallGoogleBooksApi": [
                                             "Succeeded"
@@ -81,8 +124,8 @@
                                     },
                                     "type": "SetVariable",
                                     "inputs": {
-                                        "name": "title",
-                                        "value": "@{first(body('CallGoogleBooksApi')?['items'])?['volumeInfo']?['title']}"
+                                        "name": "googleResultCount",
+                                        "value": "@int(body('CallGoogleBooksApi')?['totalItems'])"
                                     }
                                 }
                             },
@@ -184,6 +227,23 @@
                                 ]
                             }
                         },
+                        "InitGoogleResultCount": {
+                            "runAfter": {
+                                "InitAlreadySaved": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "googleResultCount",
+                                        "type": "integer",
+                                        "value": 0
+                                    }
+                                ]
+                            }
+                        },
                         "InitTitle": {
                             "runAfter": {
                                 "ExtractIsbnFromRequest": [
@@ -202,7 +262,7 @@
                         },
                         "SearchInCosmosDb": {
                             "runAfter": {
-                                "InitAlreadySaved": [
+                                "InitGoogleResultCount": [
                                     "Succeeded"
                                 ]
                             },
@@ -222,7 +282,7 @@
                         },
                         "SendResponse": {
                             "runAfter": {
-                                "Condition": [
+                                "CheckExistenceInCosmosDb": [
                                     "Succeeded"
                                 ]
                             },
