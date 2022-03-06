@@ -21,86 +21,64 @@
                 "state": "Enabled",
                 "definition": {
                     "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-                    "contentVersion": "1.0.0.0",
-                    "parameters": {
-                        "$connections": {
-                            "defaultValue": {},
-                            "type": "Object"
-                        }
-                    },
-                    "triggers": {
-                        "manual": {
-                            "type": "Request",
-                            "kind": "Http",
-                            "inputs": {
-                                "method": "GET",
-                                "schema": {}
-                            }
-                        }
-                    },
                     "actions": {
                         "CheckExistenceInCosmosDb": {
                             "actions": {
                                 "CallGoogleBooksApi": {
-                                    "runAfter": {},
-                                    "type": "Http",
                                     "inputs": {
                                         "method": "GET",
                                         "uri": "https://www.googleapis.com/books/v1/volumes?q=isbn:@{variables('isbn')}"
-                                    }
+                                    },
+                                    "runAfter": {},
+                                    "type": "Http"
                                 },
                                 "CheckResultFromGoogleBooksApi": {
                                     "actions": {
                                         "SetAlreadySavedToFalse": {
+                                            "inputs": {
+                                                "name": "alreadySaved",
+                                                "value": "@false"
+                                            },
                                             "runAfter": {
                                                 "SetAuthorFromGoogle": [
                                                     "Succeeded"
                                                 ]
                                             },
-                                            "type": "SetVariable",
-                                            "inputs": {
-                                                "name": "alreadySaved",
-                                                "value": "@false"
-                                            }
+                                            "type": "SetVariable"
                                         },
                                         "SetAuthorFromGoogle": {
+                                            "inputs": {
+                                                "name": "author",
+                                                "value": "@{join(first(body('CallGoogleBooksApi')?['items'])?['volumeInfo']?['authors'], ',')}"
+                                            },
                                             "runAfter": {
                                                 "SetTitleFromGoogle": [
                                                     "Succeeded"
                                                 ]
                                             },
-                                            "type": "SetVariable",
-                                            "inputs": {
-                                                "name": "author",
-                                                "value": "@{join(first(body('CallGoogleBooksApi')?['items'])?['volumeInfo']?['authors'], ',')}"
-                                            }
+                                            "type": "SetVariable"
                                         },
                                         "SetTitleFromGoogle": {
-                                            "runAfter": {},
-                                            "type": "SetVariable",
                                             "inputs": {
                                                 "name": "title",
                                                 "value": "@{first(body('CallGoogleBooksApi')?['items'])?['volumeInfo']?['title']}"
-                                            }
+                                            },
+                                            "runAfter": {},
+                                            "type": "SetVariable"
                                         }
-                                    },
-                                    "runAfter": {
-                                        "SetGoogleResultCount": [
-                                            "Succeeded"
-                                        ]
                                     },
                                     "else": {
                                         "actions": {
                                             "Response": {
-                                                "runAfter": {},
-                                                "type": "Response",
-                                                "kind": "Http",
                                                 "inputs": {
                                                     "headers": {
                                                         "Reason-Phrase": "The book was not found"
                                                     },
                                                     "statusCode": 404
-                                                }
+                                                },
+                                                "kind": "Http",
+                                                "runAfter": {},
+                                                "type": "Response"
                                             }
                                         }
                                     },
@@ -114,59 +92,59 @@
                                             }
                                         ]
                                     },
+                                    "runAfter": {
+                                        "SetGoogleResultCount": [
+                                            "Succeeded"
+                                        ]
+                                    },
                                     "type": "If"
                                 },
                                 "SetGoogleResultCount": {
+                                    "inputs": {
+                                        "name": "googleResultCount",
+                                        "value": "@int(body('CallGoogleBooksApi')?['totalItems'])"
+                                    },
                                     "runAfter": {
                                         "CallGoogleBooksApi": [
                                             "Succeeded"
                                         ]
                                     },
-                                    "type": "SetVariable",
-                                    "inputs": {
-                                        "name": "googleResultCount",
-                                        "value": "@int(body('CallGoogleBooksApi')?['totalItems'])"
-                                    }
+                                    "type": "SetVariable"
                                 }
-                            },
-                            "runAfter": {
-                                "SearchInCosmosDb": [
-                                    "Succeeded"
-                                ]
                             },
                             "else": {
                                 "actions": {
                                     "SetAlreadySavedToTrue": {
+                                        "inputs": {
+                                            "name": "alreadySaved",
+                                            "value": "@true"
+                                        },
                                         "runAfter": {
                                             "SetAuthorFromCosmosDb": [
                                                 "Succeeded"
                                             ]
                                         },
-                                        "type": "SetVariable",
-                                        "inputs": {
-                                            "name": "alreadySaved",
-                                            "value": "@true"
-                                        }
+                                        "type": "SetVariable"
                                     },
                                     "SetAuthorFromCosmosDb": {
+                                        "inputs": {
+                                            "name": "author",
+                                            "value": "@{first(body('SearchInCosmosDb')?['value'])?['author']}"
+                                        },
                                         "runAfter": {
                                             "SetTitleFromCosmosDb": [
                                                 "Succeeded"
                                             ]
                                         },
-                                        "type": "SetVariable",
-                                        "inputs": {
-                                            "name": "author",
-                                            "value": "@{first(body('SearchInCosmosDb')?['value'])?['author']}"
-                                        }
+                                        "type": "SetVariable"
                                     },
                                     "SetTitleFromCosmosDb": {
-                                        "runAfter": {},
-                                        "type": "SetVariable",
                                         "inputs": {
                                             "name": "title",
                                             "value": "@{first(body('SearchInCosmosDb')?['value'])?['title']}"
-                                        }
+                                        },
+                                        "runAfter": {},
+                                        "type": "SetVariable"
                                     }
                                 }
                             },
@@ -180,11 +158,14 @@
                                     }
                                 ]
                             },
+                            "runAfter": {
+                                "SearchInCosmosDb": [
+                                    "Succeeded"
+                                ]
+                            },
                             "type": "If"
                         },
                         "ExtractIsbnFromRequest": {
-                            "runAfter": {},
-                            "type": "InitializeVariable",
                             "inputs": {
                                 "variables": [
                                     {
@@ -193,15 +174,11 @@
                                         "value": "@triggerOutputs()?['queries']?['isbn']"
                                     }
                                 ]
-                            }
+                            },
+                            "runAfter": {},
+                            "type": "InitializeVariable"
                         },
                         "InitAlreadySaved": {
-                            "runAfter": {
-                                "InitAuthor": [
-                                    "Succeeded"
-                                ]
-                            },
-                            "type": "InitializeVariable",
                             "inputs": {
                                 "variables": [
                                     {
@@ -209,15 +186,15 @@
                                         "type": "boolean"
                                     }
                                 ]
-                            }
-                        },
-                        "InitAuthor": {
+                            },
                             "runAfter": {
-                                "InitTitle": [
+                                "InitAuthor": [
                                     "Succeeded"
                                 ]
                             },
-                            "type": "InitializeVariable",
+                            "type": "InitializeVariable"
+                        },
+                        "InitAuthor": {
                             "inputs": {
                                 "variables": [
                                     {
@@ -225,15 +202,15 @@
                                         "type": "string"
                                     }
                                 ]
-                            }
-                        },
-                        "InitGoogleResultCount": {
+                            },
                             "runAfter": {
-                                "InitAlreadySaved": [
+                                "InitTitle": [
                                     "Succeeded"
                                 ]
                             },
-                            "type": "InitializeVariable",
+                            "type": "InitializeVariable"
+                        },
+                        "InitGoogleResultCount": {
                             "inputs": {
                                 "variables": [
                                     {
@@ -242,15 +219,15 @@
                                         "value": 0
                                     }
                                 ]
-                            }
-                        },
-                        "InitTitle": {
+                            },
                             "runAfter": {
-                                "ExtractIsbnFromRequest": [
+                                "InitAlreadySaved": [
                                     "Succeeded"
                                 ]
                             },
-                            "type": "InitializeVariable",
+                            "type": "InitializeVariable"
+                        },
+                        "InitTitle": {
                             "inputs": {
                                 "variables": [
                                     {
@@ -258,15 +235,15 @@
                                         "type": "string"
                                     }
                                 ]
-                            }
-                        },
-                        "SearchInCosmosDb": {
+                            },
                             "runAfter": {
-                                "InitGoogleResultCount": [
+                                "ExtractIsbnFromRequest": [
                                     "Succeeded"
                                 ]
                             },
-                            "type": "ApiConnection",
+                            "type": "InitializeVariable"
+                        },
+                        "SearchInCosmosDb": {
                             "inputs": {
                                 "host": {
                                     "connection": {
@@ -278,16 +255,15 @@
                                 "queries": {
                                     "queryText": "SELECT c.id, c.isbn, c.title, c.author FROM c WHERE c.isbn = '@{variables('isbn')}'"
                                 }
-                            }
-                        },
-                        "SendResponse": {
+                            },
                             "runAfter": {
-                                "CheckExistenceInCosmosDb": [
+                                "InitGoogleResultCount": [
                                     "Succeeded"
                                 ]
                             },
-                            "type": "Response",
-                            "kind": "Http",
+                            "type": "ApiConnection"
+                        },
+                        "SendResponse": {
                             "inputs": {
                                 "body": {
                                     "alreadySaved": "@variables('alreadySaved')",
@@ -299,10 +275,34 @@
                                     "Content-Type": "application/json"
                                 },
                                 "statusCode": 200
-                            }
+                            },
+                            "kind": "Http",
+                            "runAfter": {
+                                "CheckExistenceInCosmosDb": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Response"
                         }
                     },
-                    "outputs": {}
+                    "contentVersion": "1.0.0.0",
+                    "outputs": {},
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "manual": {
+                            "inputs": {
+                                "method": "GET",
+                                "schema": {}
+                            },
+                            "kind": "Http",
+                            "type": "Request"
+                        }
+                    }
                 },
                 "parameters": {
                     "$connections": {

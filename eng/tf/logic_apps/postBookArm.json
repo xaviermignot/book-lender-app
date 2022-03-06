@@ -25,8 +25,8 @@
                         "CreateOrUpdateBookInCosmosDb": {
                             "inputs": {
                                 "body": {
-                                    "id": "@{triggerBody()?['isbn']}",
                                     "author": "@{triggerBody()?['author']}",
+                                    "id": "@{triggerBody()?['isbn']}",
                                     "isbn": "@{triggerBody()?['isbn']}",
                                     "lentTo": null,
                                     "title": "@{triggerBody()?['title']}"
