@@ -1,5 +1,5 @@
 @isbn=9782200611583
-@user=""
+@user=John Doe
 
 # P1
 
@@ -19,8 +19,7 @@ Ocp-Apim-Subscription-Key: {{apimKey}}
 }
 
 ### Lend a book to a user
-@bookId=""
-PUT {{baseUrl}}/v1/{{bookId}}
+PUT {{baseUrl}}/v1/books/{{isbn}}
 Content-Type: application/json
 Ocp-Apim-Subscription-Key: {{apimKey}}
 
@@ -32,9 +31,9 @@ Ocp-Apim-Subscription-Key: {{apimKey}}
 GET {{baseUrl}}/v1/users
 
 ### Register a book back
-@bookId=""
-PUT {{baseUrl}}/v1/{{bookId}}
+PUT {{baseUrl}}/v1/books/{{isbn}}
 Content-Type: application/json
+Ocp-Apim-Subscription-Key: {{apimKey}}
 
 {
   "lentTo": null

@@ -7,7 +7,8 @@ locals {
 
   logic_apps = {
     "get-book-by-isbn" = "getBookByIsbnArm.json",
-    "post-book"        = "postBookArm.json"
+    "post-book"        = "postBookArm.json",
+    "lend-book"        = "lendBookArm.json"
   }
 }
 
@@ -39,7 +40,7 @@ module "logic_app_base" {
 
 module "logic_app" {
   for_each = local.logic_apps
-  source = "./logic_app"
+  source   = "./logic_app"
 
   rg_name  = azurerm_resource_group.rg.name
   location = var.location
