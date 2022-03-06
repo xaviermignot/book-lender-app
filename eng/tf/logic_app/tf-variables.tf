@@ -32,6 +32,6 @@ variable "cosmosdb_connection" {
 }
 
 variable "logic_app_workflow_arm" {
-  type = string
+  type        = string
   description = "The content of the ARM template to deploy"
 }
