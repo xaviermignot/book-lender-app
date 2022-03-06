@@ -52,3 +52,16 @@ module "logic_app" {
 
   logic_app_workflow_arm = file("${path.module}/logic_apps/${each.value}")
 }
+
+module "cdn" {
+  source = "./cdn"
+
+  rg_name  = azurerm_resource_group.rg.name
+  location = var.location
+  project  = local.project
+
+  cdn_location     = var.cdn_location
+  dns_zone_name    = var.dns_config.zone_name
+  dns_zone_rg_name = var.dns_config.zone_rg_name
+  dns_cname_record = var.dns_config.cname_record
+}
