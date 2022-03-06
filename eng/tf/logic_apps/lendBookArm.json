@@ -22,6 +22,39 @@
                 "definition": {
                     "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
                     "actions": {
+                        "ExtractIsbnFromRequest": {
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "isbn",
+                                        "type": "string",
+                                        "value": "@triggerOutputs()['relativePathParameters']['isbn']"
+                                    }
+                                ]
+                            },
+                            "runAfter": {},
+                            "type": "InitializeVariable"
+                        },
+                        "SearchInCosmosDb": {
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                                    }
+                                },
+                                "method": "get",
+                                "path": "/v5/cosmosdb/@{encodeURIComponent('AccountNameFromSettings')}/dbs/@{encodeURIComponent('db-book-lender')}/colls/@{encodeURIComponent('books')}/query",
+                                "queries": {
+                                    "queryText": "SELECT c.id, c.isbn, c.title, c.author, c.lentTo FROM c WHERE c.isbn = '@{triggerOutputs()['relativePathParameters']['isbn']}'"
+                                }
+                            },
+                            "runAfter": {
+                                "ExtractIsbnFromRequest": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection"
+                        },
                         "SendResponse": {
                             "inputs": {
                                 "statusCode": 202
@@ -37,8 +70,14 @@
                         "UpdateCosmosDbDocument": {
                             "inputs": {
                                 "body": {
+                                    "author": "@{first(body('SearchInCosmosDb')?['value'])?['author']}",
                                     "id": "@{triggerOutputs()['relativePathParameters']['isbn']}",
-                                    "lentTo": "@{triggerBody()?['lentTo']}"
+                                    "isbn": "@{triggerOutputs()['relativePathParameters']['isbn']}",
+                                    "lentTo": "@{triggerBody()?['lentTo']}",
+                                    "title": "@{first(body('SearchInCosmosDb')?['value'])?['title']}"
+                                },
+                                "headers": {
+                                    "x-ms-documentdb-is-upsert": true
                                 },
                                 "host": {
                                     "connection": {
@@ -48,7 +87,11 @@
                                 "method": "post",
                                 "path": "/v2/cosmosdb/@{encodeURIComponent('AccountNameFromSettings')}/dbs/@{encodeURIComponent('db-book-lender')}/colls/@{encodeURIComponent('books')}/docs"
                             },
-                            "runAfter": {},
+                            "runAfter": {
+                                "SearchInCosmosDb": [
+                                    "Succeeded"
+                                ]
+                            },
                             "type": "ApiConnection"
                         }
                     },
