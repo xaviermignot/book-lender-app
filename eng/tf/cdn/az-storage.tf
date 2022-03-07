@@ -9,5 +9,7 @@ resource "azurerm_storage_account" "account" {
   enable_https_traffic_only = true
   min_tls_version           = "TLS1_2"
 
-  static_website {}
+  static_website {
+    index_document = "index.html"
+  }
 }
