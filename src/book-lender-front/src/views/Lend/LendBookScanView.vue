@@ -8,7 +8,7 @@ function onScan(decodedText: String, decodedResult: String) {
 </script>
 
 <template>
-  <h1>Scan a book</h1>
+  <h1>Scan a book to lend</h1>
   <QrCodeScanner :qrbox="250" :fps="10" @result="onScan"></QrCodeScanner>
   <MenuLinkButton to="/lend">Back</MenuLinkButton>
 </template>

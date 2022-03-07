@@ -1,8 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LendBookView from '../views/LendBookView.vue'
-import ScanIsbnView from '../views/Lend/ScanIsbnView.vue'
-import ManualSearchView from '../views/Lend/ManualSearchView.vue'
+import LendBookScanView from '../views/Lend/LendBookScanView.vue'
+import LendBookSearchView from '../views/Lend/LendBookSearchView.vue'
+import ReturnBookView from '../views/ReturnBookView.vue'
+import ReturnBookScanView from '../views/Return/ReturnBookScanView.vue'
+import ReturnBookListView from '../views/Return/ReturnBookListView.vue'
+import ListAllBooksView from '../views/ListAllBooksView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,12 +24,32 @@ const router = createRouter({
     {
       path: '/lend/scan',
       name: 'lend-book-scan',
-      component: ScanIsbnView
+      component: LendBookScanView
     },
     {
       path: '/lend/search',
       name: 'lend-book-search',
-      component: ManualSearchView
+      component: LendBookSearchView
+    },
+    {
+      path: '/return',
+      name: 'return-book',
+      component: ReturnBookView
+    },
+    {
+      path: '/return/scan',
+      name: 'return-book-scan',
+      component: ReturnBookScanView
+    },
+    {
+      path: '/return/list',
+      name: 'return-book-list',
+      component: ReturnBookListView
+    },
+    {
+      path: '/list',
+      name: 'list-all-books',
+      component: ListAllBooksView
     }
   ],
   linkActiveClass: "btn btn-primary",

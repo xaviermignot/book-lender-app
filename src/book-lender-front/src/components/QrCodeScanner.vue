@@ -30,7 +30,7 @@ export default defineComponent({
       this.$emit('result', decodedText, decodedResult);
     },
     onScanError(errorMessage: string, error: Html5QrcodeError) {
-
+      this.$emit('error', errorMessage, error);
     }
   }
 })
