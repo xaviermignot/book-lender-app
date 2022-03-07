@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import MenuLinkButton from '../../components/MenuLinkButton.vue'
 import { ref } from 'vue'
-import { config, bookLenderApiService } from '../../services/bookLenderApiService'
+import { config } from '../../services/bookLenderApiService'
 
 const isbn = ref("");
 const data = ref(null);
 const error = ref(null);
 
 const searching = ref(false);
-
-let svc = new bookLenderApiService();
 
 function search() {
   searching.value = true
