@@ -14,8 +14,6 @@ let svc = new bookLenderApiService();
 function search() {
   searching.value = true
 
-  // let result = svc.searchByIsbn(isbn.value)
-  // data.value = result.data.value
   fetch(
     `${config.apiUrl}/v1/books?isbn=${isbn.value}`,
     {
@@ -35,7 +33,7 @@ function search() {
     <label for="isbn" class="form-label">ISBN</label>
     <input type="text" id="isbn" class="form-control" v-model="isbn" />
   </div>
-  <div v-if="error">Oops! Error encountered: {{ error.message }}</div>
+  <div v-if="error">Oops! Error encountered !!!</div>
   <div v-else-if="data">
     Data loaded:
     <pre>{{ data }}</pre>

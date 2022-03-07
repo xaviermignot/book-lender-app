@@ -1,7 +1,9 @@
 <script lang="ts">
 import { Html5QrcodeScanner } from 'html5-qrcode'
+import { Html5QrcodeError, Html5QrcodeResult } from 'html5-qrcode/esm/core';
+import { defineComponent } from 'vue';
 
-export default {
+export default defineComponent({
   props: {
     qrbox: {
       type: Number,
@@ -21,14 +23,17 @@ export default {
       }
     };
     const html5QrcodeScanner = new Html5QrcodeScanner('qr-code-full-region', config, false);
-    html5QrcodeScanner.render(this.onScanSuccess);
+    html5QrcodeScanner.render(this.onScanSuccess, this.onScanError);
   },
   methods: {
-    onScanSuccess(decodedText, decodedResult) {
+    onScanSuccess(decodedText: string, decodedResult: Html5QrcodeResult) {
       this.$emit('result', decodedText, decodedResult);
+    },
+    onScanError(errorMessage: string, error: Html5QrcodeError) {
+
     }
   }
-}
+})
 </script>
 <template>
   <div id="qr-code-full-region"></div>
