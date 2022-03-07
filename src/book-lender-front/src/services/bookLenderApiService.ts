@@ -1,8 +1,8 @@
 import { ref, Ref } from 'vue'
 
 export const config = {
-  apiUrl: 'https://api.url.com',
-  apiKey: 'api-key'
+  apiUrl: import.meta.env.VITE_API_BASE_URL,
+  apiKey: import.meta.env.VITE_API_KEY
 }
 
 export class bookLenderApiService {
