@@ -4,6 +4,11 @@ import { Html5QrcodeError, Html5QrcodeResult } from 'html5-qrcode/esm/core';
 import { defineComponent } from 'vue';
 
 export default defineComponent({
+  data() {
+    return {
+      html5QrcodeScanner: <Html5QrcodeScanner>{}
+    }
+  },
   props: {
     qrbox: {
       type: Number,
@@ -22,15 +27,16 @@ export default defineComponent({
         useBarCodeDetectorIfSupported: false
       }
     };
-    const html5QrcodeScanner = new Html5QrcodeScanner('qr-code-full-region', config, false);
-    html5QrcodeScanner.render(this.onScanSuccess, this.onScanError);
+    this.html5QrcodeScanner = new Html5QrcodeScanner('qr-code-full-region', config, false);
+    this.html5QrcodeScanner.render(this.onScanSuccess, this.onScanError);
   },
   methods: {
     onScanSuccess(decodedText: string, decodedResult: Html5QrcodeResult) {
-      this.$emit('result', decodedText, decodedResult);
+      this.$emit('result', decodedText, decodedResult)
+      this.html5QrcodeScanner.clear()
     },
     onScanError(errorMessage: string, error: Html5QrcodeError) {
-      this.$emit('error', errorMessage, error);
+      this.$emit('error', errorMessage, error)
     }
   }
 })
