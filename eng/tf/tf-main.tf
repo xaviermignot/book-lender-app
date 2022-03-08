@@ -6,6 +6,7 @@ locals {
   project = "book-lender-${random_pet.suffix.id}"
 
   logic_apps = {
+    "get-books"        = "getBooksArm.json"
     "get-book-by-isbn" = "getBookByIsbnArm.json",
     "post-book"        = "postBookArm.json",
     "lend-book"        = "lendBookArm.json"
