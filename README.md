@@ -56,3 +56,70 @@ Of course as I'm very into IaC and Terraform these days, everything is deployed 
 
 I also love doing architecture diagrams so here is the one for this project:
 ![Architecture diagram](diagram.png)
+
+
+## Deploying Logic Apps using Terraform
+
+Creating Low-Code components using Infrastructure as Code was one of the challenge of this project. As the Logic Apps need to interact with Cosmos Db, the first thing to do was to create an underlying resource called an `API Connection`.  
+As the Terraform Azure provider does not provide a way to do this, the workaround is to use an [ARM template](/eng/tf/logic_app_base/arm-templates/cosmosdb-connection.json) in the `logic_app_base` module.  
+The ARM template is used to create a deployment by Terraform through a `azurerm_resource_group_template_deployment` resource in the [same module](/eng/tf/logic_app_base/az-logic-app-connection.tf).  
+
+The approach of using ARM templates inside Terraform was also later used to deploy the Logic Apps themselves. 
+First I use this ARM template to initialize an empty new Logic App:
+```json
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "logicAppName": {
+            "type": "String"
+        },
+        "cosmosConnectionName": {
+            "type": "String",
+            "defaultValue": "documentdb"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('logicAppName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "actions": {
+                    },
+                    "contentVersion": "1.0.0.0",
+                    "outputs": {},
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                    }
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "[parameters('cosmosConnectionName')]": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('cosmosConnectionName'))]",
+                                "connectionName": "[parameters('cosmosConnectionName')]",
+                                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/', parameters('cosmosConnectionName'))]"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
+```
+This canvas is saved as a `json` file in the `eng/tf/logic_apps` folder, and a new entry is added to the `logic_apps` local in the [`tf-main.tf`](/eng/tf/tf-main.tf) file of the root module.  
+Applying the configuration creates the Logic App, so that it can be edited in the Azure portal or using the VS Code extension.  
+Once editing is done, I copy the `definition` element from the code view to overwrite it in the `json` file to save the changes in the repo. 
+Using this approach I was able to "develop" my Logic Apps by using the Low-Code capability of the designer while saving my changes in my IaC codebase.
