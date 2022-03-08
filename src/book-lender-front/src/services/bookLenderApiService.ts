@@ -20,7 +20,7 @@ export class bookLenderApiService {
 
   searchByIsbn(isbn: string) {
     return useFetch(
-      `${config.apiUrl}/v1/books?isbn=${isbn}`,
+      `${config.apiUrl}/v1/books/${isbn}`,
       {
         headers: {
           'Ocp-Apim-Subscription-Key': config.apiKey

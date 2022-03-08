@@ -14,7 +14,7 @@ function search() {
   searching.value = true
 
   fetch(
-    `${config.apiUrl}/v1/books?isbn=${isbn.value}`,
+    `${config.apiUrl}/v1/books/${isbn.value}`,
     {
       headers: {
         'Ocp-Apim-Subscription-Key': config.apiKey

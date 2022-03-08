@@ -8,7 +8,7 @@ GET {{baseUrl}}/v1/books
 Ocp-Apim-Subscription-Key: {{apimKey}}
 
 ### Search for a book globally by ISBN
-GET {{baseUrl}}/v1/books?isbn={{isbn}}
+GET {{baseUrl}}/v1/books/{{isbn}}
 Ocp-Apim-Subscription-Key: {{apimKey}}
 
 ### Add a book to the collection
