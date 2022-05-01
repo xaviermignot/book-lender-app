@@ -6,18 +6,6 @@ export const config = {
 }
 
 export class bookLenderApiService {
-  // useFetch(url: string, request: RequestInit) {
-  //   const data = ref(null)
-  //   const error = ref(null)
-
-  //   fetch(url, request)
-  //     .then((res) => res.json())
-  //     .then((json) => (data.value = json))
-  //     .catch((err) => (error.value = err))
-
-  //   return { data, error }
-  // }
-
   searchByIsbn(isbn: string) {
     return useFetch(
       `${config.apiUrl}/v1/books/${isbn}`,
@@ -26,6 +14,25 @@ export class bookLenderApiService {
           'Ocp-Apim-Subscription-Key': config.apiKey
         }
       })
+  }
+
+  async searchByIsbnAsync(isbn: string) {
+    const response = await fetch(
+      `${config.apiUrl}/v1/books/${isbn}`,
+      {
+        headers: {
+          'Ocp-Apim-Subscription-Key': config.apiKey
+        }
+      });
+
+    switch (response.status) {
+      case 200:
+        return { success: true, message: "", book: await response.json() };
+      case 404:
+        return { success: false, message: `Unable to find a book with ISBN '${isbn}'` };
+      default:
+        return { success: false, message: 'An unexpected error occurred, please retry later' };
+    }
   }
 }
 
