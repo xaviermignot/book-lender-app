@@ -1,28 +1,30 @@
 <script setup lang="ts">
 import MenuLinkButton from '../../components/MenuLinkButton.vue'
 import { ref } from 'vue'
-import { config } from '../../services/bookLenderApiService'
+import { bookLenderApiService } from '../../services/bookLenderApiService';
 
 const isbn = ref("");
 const data = ref(null);
-const error = ref(null);
+const error = ref("");
 
 const searching = ref(false);
 
-function search() {
-  searching.value = true
+const service = new bookLenderApiService();
 
-  fetch(
-    `${config.apiUrl}/v1/books/${isbn.value}`,
-    {
-      headers: {
-        'Ocp-Apim-Subscription-Key': config.apiKey
-      }
-    })
-    .then((res) => res.json())
-    .then((json) => (data.value = json))
-    .catch((err) => (error.value = err))
-}
+const searchAsync = async () => {
+  searching.value = true;
+  data.value = null;
+  error.value = "";
+
+  const searchResult = await service.searchByIsbnAsync(isbn.value);
+
+  if (searchResult.success) {
+    data.value = searchResult.book;
+  }
+  else {
+    error.value = searchResult.message;
+  }
+};
 </script>
 
 <template>
@@ -31,12 +33,14 @@ function search() {
     <label for="isbn" class="form-label">ISBN</label>
     <input type="text" id="isbn" class="form-control" v-model="isbn" />
   </div>
-  <div v-if="error">Oops! Error encountered !!!</div>
+  <div v-if="error">
+    <pre>{{ error }}</pre>
+  </div>
   <div v-else-if="data">
     Data loaded:
     <pre>{{ data }}</pre>
   </div>
   <div v-else-if="searching">Searching...</div>
-  <button type="button" class="btn btn-success opacity-75" @click="search">Search</button>
+  <button type="button" class="btn btn-success opacity-75" @click="searchAsync">Search</button>
   <MenuLinkButton to="/lend">Back</MenuLinkButton>
 </template>
