@@ -1,0 +1,103 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "logicAppName": {
+            "type": "String"
+        },
+        "cosmosConnectionName": {
+            "type": "String",
+            "defaultValue": "documentdb"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('logicAppName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "actions": {
+                        "CreateOrUpdateBookInCosmosDb": {
+                            "inputs": {
+                                "body": {
+                                    "author": "@{triggerBody()?['author']}",
+                                    "id": "@{triggerBody()?['isbn']}",
+                                    "isbn": "@{triggerBody()?['isbn']}",
+                                    "lentTo": null,
+                                    "title": "@{triggerBody()?['title']}"
+                                },
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "path": "/v2/cosmosdb/@{encodeURIComponent('AccountNameFromSettings')}/dbs/@{encodeURIComponent('db-book-lender')}/colls/@{encodeURIComponent('books')}/docs"
+                            },
+                            "runAfter": {},
+                            "type": "ApiConnection"
+                        },
+                        "Response": {
+                            "inputs": {
+                                "statusCode": 200
+                            },
+                            "kind": "Http",
+                            "runAfter": {
+                                "CreateOrUpdateBookInCosmosDb": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Response"
+                        }
+                    },
+                    "contentVersion": "1.0.0.0",
+                    "outputs": {},
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "manual": {
+                            "inputs": {
+                                "schema": {
+                                    "properties": {
+                                        "author": {
+                                            "type": "string"
+                                        },
+                                        "isbn": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "kind": "Http",
+                            "type": "Request"
+                        }
+                    }
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "[parameters('cosmosConnectionName')]": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('cosmosConnectionName'))]",
+                                "connectionName": "[parameters('cosmosConnectionName')]",
+                                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/', parameters('cosmosConnectionName'))]"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

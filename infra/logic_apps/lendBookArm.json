@@ -1,0 +1,139 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "logicAppName": {
+            "type": "String"
+        },
+        "cosmosConnectionName": {
+            "type": "String",
+            "defaultValue": "documentdb"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('logicAppName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "actions": {
+                        "ExtractIsbnFromRequest": {
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "isbn",
+                                        "type": "string",
+                                        "value": "@triggerOutputs()['relativePathParameters']['isbn']"
+                                    }
+                                ]
+                            },
+                            "runAfter": {},
+                            "type": "InitializeVariable"
+                        },
+                        "SearchInCosmosDb": {
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                                    }
+                                },
+                                "method": "get",
+                                "path": "/v5/cosmosdb/@{encodeURIComponent('AccountNameFromSettings')}/dbs/@{encodeURIComponent('db-book-lender')}/colls/@{encodeURIComponent('books')}/query",
+                                "queries": {
+                                    "queryText": "SELECT c.id, c.isbn, c.title, c.author, c.lentTo FROM c WHERE c.isbn = '@{triggerOutputs()['relativePathParameters']['isbn']}'"
+                                }
+                            },
+                            "runAfter": {
+                                "ExtractIsbnFromRequest": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection"
+                        },
+                        "SendResponse": {
+                            "inputs": {
+                                "statusCode": 202
+                            },
+                            "kind": "Http",
+                            "runAfter": {
+                                "UpdateCosmosDbDocument": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Response"
+                        },
+                        "UpdateCosmosDbDocument": {
+                            "inputs": {
+                                "body": {
+                                    "author": "@{first(body('SearchInCosmosDb')?['value'])?['author']}",
+                                    "id": "@{triggerOutputs()['relativePathParameters']['isbn']}",
+                                    "isbn": "@{triggerOutputs()['relativePathParameters']['isbn']}",
+                                    "lentTo": "@{triggerBody()?['lentTo']}",
+                                    "title": "@{first(body('SearchInCosmosDb')?['value'])?['title']}"
+                                },
+                                "headers": {
+                                    "x-ms-documentdb-is-upsert": true
+                                },
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "path": "/v2/cosmosdb/@{encodeURIComponent('AccountNameFromSettings')}/dbs/@{encodeURIComponent('db-book-lender')}/colls/@{encodeURIComponent('books')}/docs"
+                            },
+                            "runAfter": {
+                                "SearchInCosmosDb": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection"
+                        }
+                    },
+                    "contentVersion": "1.0.0.0",
+                    "outputs": {},
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "manual": {
+                            "inputs": {
+                                "method": "PUT",
+                                "relativePath": "/{isbn}",
+                                "schema": {
+                                    "properties": {
+                                        "lentTo": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "kind": "Http",
+                            "type": "Request"
+                        }
+                    }
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "[parameters('cosmosConnectionName')]": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('cosmosConnectionName'))]",
+                                "connectionName": "[parameters('cosmosConnectionName')]",
+                                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/', parameters('cosmosConnectionName'))]"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,321 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "logicAppName": {
+            "type": "String"
+        },
+        "cosmosConnectionName": {
+            "type": "String",
+            "defaultValue": "documentdb"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('logicAppName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "actions": {
+                        "CheckExistenceInCosmosDb": {
+                            "actions": {
+                                "CallGoogleBooksApi": {
+                                    "inputs": {
+                                        "method": "GET",
+                                        "uri": "https://www.googleapis.com/books/v1/volumes?q=isbn:@{variables('isbn')}"
+                                    },
+                                    "runAfter": {},
+                                    "type": "Http"
+                                },
+                                "CheckResultFromGoogleBooksApi": {
+                                    "actions": {
+                                        "SetAlreadySavedToFalse": {
+                                            "inputs": {
+                                                "name": "alreadySaved",
+                                                "value": "@false"
+                                            },
+                                            "runAfter": {
+                                                "SetAuthorFromGoogle": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "SetVariable"
+                                        },
+                                        "SetAuthorFromGoogle": {
+                                            "inputs": {
+                                                "name": "author",
+                                                "value": "@{join(first(body('CallGoogleBooksApi')?['items'])?['volumeInfo']?['authors'], ',')}"
+                                            },
+                                            "runAfter": {
+                                                "SetTitleFromGoogle": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "SetVariable"
+                                        },
+                                        "SetTitleFromGoogle": {
+                                            "inputs": {
+                                                "name": "title",
+                                                "value": "@{first(body('CallGoogleBooksApi')?['items'])?['volumeInfo']?['title']}"
+                                            },
+                                            "runAfter": {},
+                                            "type": "SetVariable"
+                                        }
+                                    },
+                                    "else": {
+                                        "actions": {
+                                            "Response": {
+                                                "inputs": {
+                                                    "headers": {
+                                                        "Reason-Phrase": "The book was not found"
+                                                    },
+                                                    "statusCode": 404
+                                                },
+                                                "kind": "Http",
+                                                "runAfter": {},
+                                                "type": "Response"
+                                            }
+                                        }
+                                    },
+                                    "expression": {
+                                        "and": [
+                                            {
+                                                "greater": [
+                                                    "@variables('googleResultCount')",
+                                                    0
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    "runAfter": {
+                                        "SetGoogleResultCount": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "If"
+                                },
+                                "SetGoogleResultCount": {
+                                    "inputs": {
+                                        "name": "googleResultCount",
+                                        "value": "@int(body('CallGoogleBooksApi')?['totalItems'])"
+                                    },
+                                    "runAfter": {
+                                        "CallGoogleBooksApi": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "SetVariable"
+                                }
+                            },
+                            "else": {
+                                "actions": {
+                                    "SetAlreadySavedToTrue": {
+                                        "inputs": {
+                                            "name": "alreadySaved",
+                                            "value": "@true"
+                                        },
+                                        "runAfter": {
+                                            "SetAuthorFromCosmosDb": [
+                                                "Succeeded"
+                                            ]
+                                        },
+                                        "type": "SetVariable"
+                                    },
+                                    "SetAuthorFromCosmosDb": {
+                                        "inputs": {
+                                            "name": "author",
+                                            "value": "@{first(body('SearchInCosmosDb')?['value'])?['author']}"
+                                        },
+                                        "runAfter": {
+                                            "SetTitleFromCosmosDb": [
+                                                "Succeeded"
+                                            ]
+                                        },
+                                        "type": "SetVariable"
+                                    },
+                                    "SetTitleFromCosmosDb": {
+                                        "inputs": {
+                                            "name": "title",
+                                            "value": "@{first(body('SearchInCosmosDb')?['value'])?['title']}"
+                                        },
+                                        "runAfter": {},
+                                        "type": "SetVariable"
+                                    }
+                                }
+                            },
+                            "expression": {
+                                "and": [
+                                    {
+                                        "equals": [
+                                            "@{body('SearchInCosmosDb')?['Count']}",
+                                            "0"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "runAfter": {
+                                "SearchInCosmosDb": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "If"
+                        },
+                        "ExtractIsbnFromRequest": {
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "isbn",
+                                        "type": "string",
+                                        "value": "@triggerOutputs()?['queries']?['isbn']"
+                                    }
+                                ]
+                            },
+                            "runAfter": {},
+                            "type": "InitializeVariable"
+                        },
+                        "InitAlreadySaved": {
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "alreadySaved",
+                                        "type": "boolean"
+                                    }
+                                ]
+                            },
+                            "runAfter": {
+                                "InitAuthor": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable"
+                        },
+                        "InitAuthor": {
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "author",
+                                        "type": "string"
+                                    }
+                                ]
+                            },
+                            "runAfter": {
+                                "InitTitle": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable"
+                        },
+                        "InitGoogleResultCount": {
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "googleResultCount",
+                                        "type": "integer",
+                                        "value": 0
+                                    }
+                                ]
+                            },
+                            "runAfter": {
+                                "InitAlreadySaved": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable"
+                        },
+                        "InitTitle": {
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "title",
+                                        "type": "string"
+                                    }
+                                ]
+                            },
+                            "runAfter": {
+                                "ExtractIsbnFromRequest": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable"
+                        },
+                        "SearchInCosmosDb": {
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                                    }
+                                },
+                                "method": "get",
+                                "path": "/v5/cosmosdb/@{encodeURIComponent('AccountNameFromSettings')}/dbs/@{encodeURIComponent('db-book-lender')}/colls/@{encodeURIComponent('books')}/query",
+                                "queries": {
+                                    "queryText": "SELECT c.id, c.isbn, c.title, c.author FROM c WHERE c.isbn = '@{variables('isbn')}'"
+                                }
+                            },
+                            "runAfter": {
+                                "InitGoogleResultCount": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection"
+                        },
+                        "SendResponse": {
+                            "inputs": {
+                                "body": {
+                                    "alreadySaved": "@variables('alreadySaved')",
+                                    "author": "@variables('author')",
+                                    "isbn": "@variables('isbn')",
+                                    "title": "@variables('title')"
+                                },
+                                "headers": {
+                                    "Content-Type": "application/json"
+                                },
+                                "statusCode": 200
+                            },
+                            "kind": "Http",
+                            "runAfter": {
+                                "CheckExistenceInCosmosDb": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Response"
+                        }
+                    },
+                    "contentVersion": "1.0.0.0",
+                    "outputs": {},
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "manual": {
+                            "inputs": {
+                                "method": "GET",
+                                "schema": {}
+                            },
+                            "kind": "Http",
+                            "type": "Request"
+                        }
+                    }
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "[parameters('cosmosConnectionName')]": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('cosmosConnectionName'))]",
+                                "connectionName": "[parameters('cosmosConnectionName')]",
+                                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/',resourceGroup().location,'/managedApis/', parameters('cosmosConnectionName'))]"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
