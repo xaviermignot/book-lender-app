@@ -1,5 +1,6 @@
 param suffix string
 param location string
+param enableFreeTier bool
 
 resource account 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
   name: 'cdb-${suffix}'
@@ -7,7 +8,7 @@ resource account 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
 
   properties: {
     databaseAccountOfferType: 'Standard'
-    enableFreeTier: false
+    enableFreeTier: enableFreeTier
 
     consistencyPolicy: {
       defaultConsistencyLevel: 'Session'

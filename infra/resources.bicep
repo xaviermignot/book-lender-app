@@ -1,5 +1,6 @@
 param suffix string
 param location string
+param enableCosmosDbFreeTier bool
 
 module cosmosDb 'modules/cosmosDb.bicep' = {
   name: 'deploy-cosmos-db'
@@ -7,6 +8,7 @@ module cosmosDb 'modules/cosmosDb.bicep' = {
   params: {
     location: location
     suffix: suffix
+    enableFreeTier: enableCosmosDbFreeTier
   }
 }
 

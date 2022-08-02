@@ -7,6 +7,9 @@ param location string
 @allowed([ 'dev', 'prod' ])
 param env string
 
+@description('Indicates if CosmosDb free tier should be enabled.')
+param enableCosmosDbFreeTier bool = false
+
 var suffix = '${env}-book-lender-${uniqueString(subscription().id, location)}'
 
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -21,5 +24,6 @@ module resources 'resources.bicep' = {
   params: {
     location: location
     suffix: suffix
+    enableCosmosDbFreeTier: enableCosmosDbFreeTier
   }
 }
