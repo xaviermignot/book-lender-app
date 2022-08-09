@@ -3,6 +3,9 @@ targetScope = 'subscription'
 @description('Specifies the Azure region to use.')
 param location string
 
+@description('Specifies the Azure region to use for CDN profiles and endpoints.')
+param cdnLocation string
+
 @description('Specifies the targetted environment.')
 @allowed([ 'dev', 'prod' ])
 param env string
@@ -23,6 +26,7 @@ module resources 'resources.bicep' = {
 
   params: {
     location: location
+    cdnLocation: cdnLocation
     suffix: suffix
     enableCosmosDbFreeTier: enableCosmosDbFreeTier
   }

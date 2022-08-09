@@ -59,4 +59,4 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   }
 }
 
-output websiteEndpoint string = storageAccount.properties.primaryEndpoints.web
+output websiteHost string = replace(replace(storageAccount.properties.primaryEndpoints.web, 'https://', ''), '/', '')

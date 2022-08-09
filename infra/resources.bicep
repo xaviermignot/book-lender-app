@@ -1,5 +1,6 @@
 param suffix string
 param location string
+param cdnLocation string
 param enableCosmosDbFreeTier bool
 
 module cosmosDb 'modules/cosmosDb.bicep' = {
@@ -41,11 +42,21 @@ module logicAppDeployments 'modules/logicApp.bicep' = [for logicApp in items(log
   }
 }]
 
-module cdn 'modules/cdn/staticWebsite.bicep' = {
+module cdnStaticWebsite 'modules/cdn/staticWebsite.bicep' = {
   name: 'deploy-cdn-static-website'
 
   params: {
     location: location
+    suffix: suffix
+  }
+}
+
+module cdn 'modules/cdn/profile.bicep' = {
+  name: 'deploy-cdn-profile'
+
+  params: {
+    location: cdnLocation
+    staticWebsiteHost: cdnStaticWebsite.outputs.websiteHost
     suffix: suffix
   }
 }
