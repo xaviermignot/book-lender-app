@@ -40,3 +40,12 @@ module logicAppDeployments 'modules/logicApp.bicep' = [for logicApp in items(log
     suffix: suffix
   }
 }]
+
+module cdn 'modules/cdn/staticWebsite.bicep' = {
+  name: 'deploy-cdn-static-website'
+
+  params: {
+    location: location
+    suffix: suffix
+  }
+}
