@@ -10,6 +10,12 @@
         },
         "cdnLocation": {
             "value": "${CDN_LOCATION}"
+        },
+        "customDomain": {
+            "value": "${CUSTOM_DOMAIN}"
+        },
+        "dnsResourceGroup": {
+            "value": "${DNS_RESOURCE_GROUP}"
         }
     }
 }

@@ -13,6 +13,11 @@ param env string
 @description('Indicates if CosmosDb free tier should be enabled.')
 param enableCosmosDbFreeTier bool = false
 
+@description('The custom domain to use for the website')
+param customDomain string
+
+param dnsResourceGroup string
+
 var suffix = '${env}-book-lender-${uniqueString(subscription().id, location)}'
 
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -29,5 +34,7 @@ module resources 'resources.bicep' = {
     cdnLocation: cdnLocation
     suffix: suffix
     enableCosmosDbFreeTier: enableCosmosDbFreeTier
+    customDomain: customDomain
+    dnsResourceGroup: dnsResourceGroup
   }
 }

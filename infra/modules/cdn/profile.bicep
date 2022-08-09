@@ -17,13 +17,16 @@ resource staticWebsiteEndpoint 'Microsoft.Cdn/profiles/endpoints@2021-06-01' = {
   parent: profile
 
   properties: {
-    origins:  [
+    origins: [
       {
         name: 'static-http'
         properties: {
           hostName: staticWebsiteHost
         }
-      } 
+      }
     ]
   }
 }
+
+output endpointFullName string = '${profile.name}/${staticWebsiteEndpoint.name}'
+output endpointHostName string = staticWebsiteEndpoint.properties.hostName

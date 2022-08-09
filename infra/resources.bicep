@@ -2,6 +2,8 @@ param suffix string
 param location string
 param cdnLocation string
 param enableCosmosDbFreeTier bool
+param customDomain string
+param dnsResourceGroup string
 
 module cosmosDb 'modules/cosmosDb.bicep' = {
   name: 'deploy-cosmos-db'
@@ -51,12 +53,31 @@ module cdnStaticWebsite 'modules/cdn/staticWebsite.bicep' = {
   }
 }
 
-module cdn 'modules/cdn/profile.bicep' = {
+module cdnProfile 'modules/cdn/profile.bicep' = {
   name: 'deploy-cdn-profile'
 
   params: {
     location: cdnLocation
     staticWebsiteHost: cdnStaticWebsite.outputs.websiteHost
     suffix: suffix
+  }
+}
+
+module cdnDns 'modules/cdn/dns.bicep' = {
+  name: 'deploy-cdn-dns'
+  scope: resourceGroup(dnsResourceGroup)
+
+  params: {
+    customDomain: customDomain
+    targetHostname: cdnProfile.outputs.endpointHostName
+  }
+}
+
+module cdnCustomDomain 'modules/cdn/customDomain.bicep' = {
+  name: 'deploy-cdn-custom-domain'
+
+  params: {
+    customDomain: customDomain
+    endpointName: cdnProfile.outputs.endpointFullName
   }
 }
