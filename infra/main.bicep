@@ -18,7 +18,8 @@ param customDomain string
 
 param dnsResourceGroup string
 
-var suffix = '${env}-book-lender-${uniqueString(subscription().id, location)}'
+var suffix = '${env}-book-lender'
+var uniqueSuffix = '${suffix}-${uniqueString(subscription().id, env, location)}'
 
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: 'rg-${suffix}'
@@ -33,6 +34,7 @@ module resources 'resources.bicep' = {
     location: location
     cdnLocation: cdnLocation
     suffix: suffix
+    uniqueSuffix: uniqueSuffix
     enableCosmosDbFreeTier: enableCosmosDbFreeTier
     customDomain: customDomain
     dnsResourceGroup: dnsResourceGroup

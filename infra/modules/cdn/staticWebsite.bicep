@@ -1,8 +1,8 @@
-param suffix string
+param uniqueSuffix string
 param location string
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
-  name: substring('stor${replace(suffix, '-', '')}', 0, 24)
+  name: substring('stor${replace(uniqueSuffix, '-', '')}', 0, 24)
   location: location
 
   sku: {

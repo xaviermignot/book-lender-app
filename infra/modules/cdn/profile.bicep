@@ -1,4 +1,5 @@
 param suffix string
+param uniqueSuffix string
 param location string
 param staticWebsiteHost string
 
@@ -12,7 +13,7 @@ resource profile 'Microsoft.Cdn/profiles@2021-06-01' = {
 }
 
 resource staticWebsiteEndpoint 'Microsoft.Cdn/profiles/endpoints@2021-06-01' = {
-  name: 'cdne-${suffix}-web'
+  name: 'cdne-${uniqueSuffix}-web'
   location: location
   parent: profile
 

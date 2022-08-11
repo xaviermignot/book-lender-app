@@ -1,4 +1,7 @@
+@description('The suffix to use in resource naming.')
 param suffix string
+@description('The suffix to use in resource naming when the scope of uniqueness is global.')
+param uniqueSuffix string
 param location string
 param cdnLocation string
 param enableCosmosDbFreeTier bool
@@ -10,7 +13,7 @@ module cosmosDb 'modules/cosmosDb.bicep' = {
 
   params: {
     location: location
-    suffix: suffix
+    uniqueSuffix: uniqueSuffix
     enableFreeTier: enableCosmosDbFreeTier
   }
 }
@@ -49,7 +52,7 @@ module cdnStaticWebsite 'modules/cdn/staticWebsite.bicep' = {
 
   params: {
     location: location
-    suffix: suffix
+    uniqueSuffix: uniqueSuffix
   }
 }
 
@@ -60,6 +63,7 @@ module cdnProfile 'modules/cdn/profile.bicep' = {
     location: cdnLocation
     staticWebsiteHost: cdnStaticWebsite.outputs.websiteHost
     suffix: suffix
+    uniqueSuffix: uniqueSuffix
   }
 }
 

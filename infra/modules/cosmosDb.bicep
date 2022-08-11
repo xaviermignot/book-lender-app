@@ -1,9 +1,9 @@
-param suffix string
+param uniqueSuffix string
 param location string
 param enableFreeTier bool
 
 resource account 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
-  name: 'cdb-${suffix}'
+  name: 'cdb-${uniqueSuffix}'
   location: location
 
   properties: {
@@ -24,12 +24,12 @@ resource account 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
 }
 
 resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-05-15' = {
-  name: 'db-${suffix}'
+  name: 'db-${uniqueSuffix}'
   parent: account
 
   properties: {
     resource: {
-      id: 'db-${suffix}'
+      id: 'db-${uniqueSuffix}'
     }
   }
 }
