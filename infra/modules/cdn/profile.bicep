@@ -29,5 +29,7 @@ resource staticWebsiteEndpoint 'Microsoft.Cdn/profiles/endpoints@2021-06-01' = {
   }
 }
 
+output endpointName string = staticWebsiteEndpoint.name
 output endpointFullName string = '${profile.name}/${staticWebsiteEndpoint.name}'
 output endpointHostName string = staticWebsiteEndpoint.properties.hostName
+output profileName string = profile.name

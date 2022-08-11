@@ -23,7 +23,7 @@ resource cosmosDbConnection 'Microsoft.Web/connections@2016-06-01' = {
 }
 
 resource logicAppsMsi 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
-  name: 'msi-${suffix}'
+  name: 'msi-${suffix}-logic-apps'
   location: location
 }
 

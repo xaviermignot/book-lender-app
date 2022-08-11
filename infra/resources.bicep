@@ -8,6 +8,15 @@ param enableCosmosDbFreeTier bool
 param customDomain string
 param dnsResourceGroup string
 
+module deploymentScriptsIdentity 'modules/deploymentScriptIdentity.bicep' = {
+  name: 'deploy-scripts-identity'
+
+  params: {
+    location: location
+    suffix: suffix
+  }
+}
+
 module cosmosDb 'modules/cosmosDb.bicep' = {
   name: 'deploy-cosmos-db'
 
@@ -53,6 +62,7 @@ module cdnStaticWebsite 'modules/cdn/staticWebsite.bicep' = {
   params: {
     location: location
     uniqueSuffix: uniqueSuffix
+    deploymentScriptIdentity: deploymentScriptsIdentity.outputs.msi
   }
 }
 
@@ -82,6 +92,12 @@ module cdnCustomDomain 'modules/cdn/customDomain.bicep' = {
 
   params: {
     customDomain: customDomain
-    endpointName: cdnProfile.outputs.endpointFullName
+    endpointName: cdnProfile.outputs.endpointName
+    endpointFullName: cdnProfile.outputs.endpointFullName
+    location: location
+    profileName: cdnProfile.outputs.profileName
+    deploymentScriptIdentity: deploymentScriptsIdentity.outputs.msi
   }
+
+  dependsOn: [ cdnDns ]
 }
