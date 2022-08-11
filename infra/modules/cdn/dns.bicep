@@ -14,7 +14,7 @@ resource cnameRecord 'Microsoft.Network/dnsZones/CNAME@2018-05-01' = {
   parent: dnsZone
 
   properties: {
-    TTL: 3600
+    TTL: 300
     CNAMERecord: {
       cname: targetHostname
     }
