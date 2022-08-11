@@ -3,10 +3,15 @@ param location string
 param name string
 param msi object
 param logicAppArmTemplate object
+@description('The default tags to assign to resources.')
+param defaultTags object
+
+var tags = union(defaultTags, { bicepModule: 'logicApp' })
 
 resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
   name: 'ala-${suffix}-${name}'
   location: location
+  tags: tags
 
   identity: {
     type: 'UserAssigned'
@@ -24,6 +29,7 @@ resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
 
 resource workflowDefinitionDeployment 'Microsoft.Resources/deployments@2021-04-01' = {
   name: 'deploy-ala-${name}-definition'
+  tags: tags
 
   properties: {
     mode: 'Incremental'

@@ -16,14 +16,22 @@ param enableCosmosDbFreeTier bool = false
 @description('The custom domain to use for the website')
 param customDomain string
 
+@description('The name of the resource group containing the DNS zone.')
 param dnsResourceGroup string
 
 var suffix = '${env}-book-lender'
 var uniqueSuffix = '${suffix}-${uniqueString(subscription().id, env, location)}'
 
+var tags = {
+  projectName: 'BookLender'
+  env: env
+  deploymentTool: 'Bicep'
+}
+
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: 'rg-${suffix}'
   location: location
+  tags: union(tags, { bicepModule: 'main' })
 }
 
 module resources 'resources.bicep' = {
@@ -38,5 +46,6 @@ module resources 'resources.bicep' = {
     enableCosmosDbFreeTier: enableCosmosDbFreeTier
     customDomain: customDomain
     dnsResourceGroup: dnsResourceGroup
+    defaultTags: tags
   }
 }

@@ -1,6 +1,10 @@
 param suffix string
 param location string
 param accountName string
+@description('The default tags to assign to resources.')
+param defaultTags object
+
+var tags = union(defaultTags, { bicepModule: 'logicAppBase' })
 
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' existing = {
   name: accountName
@@ -9,6 +13,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' exis
 resource cosmosDbConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: 'documentdb'
   location: location
+  tags: tags
 
   properties: {
     displayName: 'ala-connection-cdb'
@@ -25,6 +30,7 @@ resource cosmosDbConnection 'Microsoft.Web/connections@2016-06-01' = {
 resource logicAppsMsi 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'msi-${suffix}-logic-apps'
   location: location
+  tags: tags
 }
 
 output connection object = {

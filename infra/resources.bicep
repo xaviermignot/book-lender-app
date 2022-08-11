@@ -7,6 +7,8 @@ param cdnLocation string
 param enableCosmosDbFreeTier bool
 param customDomain string
 param dnsResourceGroup string
+@description('The default tags to assign to resources.')
+param defaultTags object
 
 module deploymentScriptsIdentity 'modules/deploymentScriptIdentity.bicep' = {
   name: 'deploy-scripts-identity'
@@ -14,6 +16,7 @@ module deploymentScriptsIdentity 'modules/deploymentScriptIdentity.bicep' = {
   params: {
     location: location
     suffix: suffix
+    defaultTags: defaultTags
   }
 }
 
@@ -24,6 +27,7 @@ module cosmosDb 'modules/cosmosDb.bicep' = {
     location: location
     uniqueSuffix: uniqueSuffix
     enableFreeTier: enableCosmosDbFreeTier
+    defaultTags: defaultTags
   }
 }
 
@@ -34,6 +38,7 @@ module logicAppsBase 'modules/logicAppBase.bicep' = {
     accountName: cosmosDb.outputs.accountName
     location: location
     suffix: suffix
+    defaultTags: defaultTags
   }
 }
 
@@ -53,6 +58,7 @@ module logicAppDeployments 'modules/logicApp.bicep' = [for logicApp in items(log
     msi: logicAppsBase.outputs.msi
     logicAppArmTemplate: logicApp.value
     suffix: suffix
+    defaultTags: defaultTags
   }
 }]
 
@@ -63,6 +69,7 @@ module cdnStaticWebsite 'modules/cdn/staticWebsite.bicep' = {
     location: location
     uniqueSuffix: uniqueSuffix
     deploymentScriptIdentity: deploymentScriptsIdentity.outputs.msi
+    defaultTags: defaultTags
   }
 }
 
@@ -74,6 +81,7 @@ module cdnProfile 'modules/cdn/profile.bicep' = {
     staticWebsiteHost: cdnStaticWebsite.outputs.websiteHost
     suffix: suffix
     uniqueSuffix: uniqueSuffix
+    defaultTags: defaultTags
   }
 }
 
@@ -97,6 +105,7 @@ module cdnCustomDomain 'modules/cdn/customDomain.bicep' = {
     location: location
     profileName: cdnProfile.outputs.profileName
     deploymentScriptIdentity: deploymentScriptsIdentity.outputs.msi
+    defaultTags: defaultTags
   }
 
   dependsOn: [ cdnDns ]

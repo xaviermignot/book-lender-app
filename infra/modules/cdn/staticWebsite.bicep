@@ -1,10 +1,15 @@
 param uniqueSuffix string
 param location string
 param deploymentScriptIdentity object
+@description('The default tags to assign to resources.')
+param defaultTags object
+
+var tags = union(defaultTags, { bicepModule: 'cdn/staticWebsite' })
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   name: substring('stor${replace(uniqueSuffix, '-', '')}', 0, 24)
   location: location
+  tags: tags
 
   sku: {
     name: 'Standard_LRS'
@@ -38,6 +43,7 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   name: 'enableStaticWebsite'
   kind: 'AzureCLI'
   location: location
+  tags: tags
 
   identity: {
     type: 'UserAssigned'

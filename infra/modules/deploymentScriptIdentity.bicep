@@ -1,10 +1,13 @@
 @description('The suffix to use in resource naming.')
 param suffix string
 param location string
+@description('The default tags to assign to resources.')
+param defaultTags object
 
 resource deploymentScriptsMsi 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'msi-${suffix}-deployment-scripts'
   location: location
+  tags: defaultTags
 }
 
 resource contributorRoleDefinition 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {

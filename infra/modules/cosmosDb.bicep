@@ -1,10 +1,15 @@
 param uniqueSuffix string
 param location string
 param enableFreeTier bool
+@description('The default tags to assign to resources.')
+param defaultTags object
+
+var tags = union(defaultTags, { bicepModule: 'cosmosDb' })
 
 resource account 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
   name: 'cdb-${uniqueSuffix}'
   location: location
+  tags: tags
 
   properties: {
     databaseAccountOfferType: 'Standard'
@@ -26,6 +31,7 @@ resource account 'Microsoft.DocumentDB/databaseAccounts@2022-05-15' = {
 resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-05-15' = {
   name: 'db-${uniqueSuffix}'
   parent: account
+  tags: tags
 
   properties: {
     resource: {
@@ -37,6 +43,7 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2022-05-15
 resource deparmentsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2022-05-15' = {
   name: 'books'
   parent: database
+  tags: tags
 
   properties: {
     resource: {
@@ -51,6 +58,7 @@ resource deparmentsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases
 resource cheesesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2022-05-15' = {
   name: 'users'
   parent: database
+  tags: tags
 
   properties: {
     resource: {

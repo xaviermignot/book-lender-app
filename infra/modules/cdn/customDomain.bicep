@@ -4,6 +4,10 @@ param endpointFullName string
 param profileName string
 param location string
 param deploymentScriptIdentity object
+@description('The default tags to assign to resources.')
+param defaultTags object
+
+var tags = union(defaultTags, { bicepModule: 'cdn/customDomain' })
 
 resource staticWebsiteEndpoint 'Microsoft.Cdn/profiles/endpoints@2021-06-01' existing = {
   name: endpointFullName
@@ -22,6 +26,7 @@ resource enableHttps 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   name: 'enableHttps'
   kind: 'AzureCLI'
   location: location
+  tags: tags
 
   identity: {
     type: 'UserAssigned'
