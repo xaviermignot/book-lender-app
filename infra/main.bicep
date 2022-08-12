@@ -13,11 +13,11 @@ param env string
 @description('Indicates if CosmosDb free tier should be enabled.')
 param enableCosmosDbFreeTier bool = false
 
-@description('The custom domain to use for the website.')
-param customDomain string
+@description('The subdomain to use for the website.')
+param frontSubdomain string
 
-@description('The custom domain to use for the APIs.')
-param apiCustomDomain string
+@description('The subdomain to use for the API.')
+param apiSubdomain string
 
 @description('The contact information about the APIM publisher.')
 param apimPublisher object
@@ -50,8 +50,8 @@ module resources 'resources.bicep' = {
     suffix: suffix
     uniqueSuffix: uniqueSuffix
     enableCosmosDbFreeTier: enableCosmosDbFreeTier
-    customDomain: customDomain
-    apiCustomDomain: apiCustomDomain
+    frontSubdomain: frontSubdomain
+    apiSubdomain: apiSubdomain
     apimPublisher: apimPublisher
     dnsZone: dnsZone
     defaultTags: tags

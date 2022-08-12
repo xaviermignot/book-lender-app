@@ -3,10 +3,13 @@ param suffix string
 @description('The suffix to use in resource naming when the scope of uniqueness is global.')
 param uniqueSuffix string
 param location string
+
 param cdnLocation string
 param enableCosmosDbFreeTier bool
-param customDomain string
-param apiCustomDomain string
+
+param frontSubdomain string
+param apiSubdomain string
+
 @description('The contact information about the APIM publisher.')
 param apimPublisher object
 @description('Information about the DNS Zone to use (resource group and name).')
@@ -94,8 +97,11 @@ module cdnDns 'modules/dns/cname.bicep' = {
   scope: resourceGroup(dnsZone.resourceGroupName)
 
   params: {
-    customDomain: customDomain
-    targetHostname: cdnProfile.outputs.endpointHostName
+    record: {
+      name: frontSubdomain
+      value: cdnProfile.outputs.endpointHostName
+    }
+    zoneName: dnsZone.name
   }
 }
 
@@ -103,7 +109,7 @@ module cdnCustomDomain 'modules/cdn/customDomain.bicep' = {
   name: 'deploy-cdn-custom-domain'
 
   params: {
-    customDomain: customDomain
+    customDomain: '${frontSubdomain}.${dnsZone.name}'
     endpointName: cdnProfile.outputs.endpointName
     endpointFullName: cdnProfile.outputs.endpointFullName
     location: location
@@ -132,8 +138,11 @@ module apimCname 'modules/dns/cname.bicep' = {
   scope: resourceGroup(dnsZone.resourceGroupName)
 
   params: {
-    customDomain: apiCustomDomain
-    targetHostname: apimService.outputs.serviceDefaultHost
+    record: {
+      name: apiSubdomain
+      value: apimService.outputs.serviceDefaultHost
+    }
+    zoneName: dnsZone.name
   }
 }
 
@@ -143,7 +152,7 @@ module apimTxt 'modules/dns/txt.bicep' = {
 
   params: {
     record: {
-      name: 'apimuid.${replace(apiCustomDomain, '.${dnsZone.name}', '')}'
+      name: 'apimuid.${apiSubdomain}'
       value: apimService.outputs.domainOwnershipIdentifier
     }
     zoneName: dnsZone.name
@@ -154,7 +163,7 @@ module apimServiceWithCustomHostname 'modules/apim/serviceWithCustomHostname.bic
   name: 'deploy-apim-service-full'
 
   params: {
-    apiCustomDomain: apiCustomDomain
+    apiCustomDomain: '${apiSubdomain}.${dnsZone.name}'
     defaultTags: defaultTags
     location: location
     publisher: apimPublisher

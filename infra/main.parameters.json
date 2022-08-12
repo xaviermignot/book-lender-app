@@ -11,11 +11,11 @@
         "cdnLocation": {
             "value": "${CDN_LOCATION}"
         },
-        "customDomain": {
-            "value": "${CUSTOM_DOMAIN}"
+        "frontSubdomain": {
+            "value": "${FRONT_SUBDOMAIN}"
         },
-        "apiCustomDomain": {
-            "value": "${API_CUSTOM_DOMAIN}"
+        "apiSubdomain": {
+            "value": "${API_SUBDOMAIN}"
         },
         "dnsZone": {
             "value": {

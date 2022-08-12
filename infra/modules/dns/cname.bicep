@@ -1,25 +1,18 @@
-param customDomain string
-param targetHostname string
-
-var hostSegments = split(customDomain, '.')
-var dnsZoneName = join(skip(hostSegments, 1), '.')
-var dnsCnameRecord = hostSegments[0]
+param record object
+param zoneName string
 
 resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' existing = {
-  name: dnsZoneName
+  name: zoneName
 }
 
 resource cnameRecord 'Microsoft.Network/dnsZones/CNAME@2018-05-01' = {
-  name: dnsCnameRecord
+  name: record.name
   parent: dnsZone
 
   properties: {
     TTL: 300
     CNAMERecord: {
-      cname: targetHostname
+      cname: record.value
     }
   }
 }
-
-output dnsZoneName string = dnsZoneName
-output dnsRecord string = dnsCnameRecord
