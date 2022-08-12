@@ -6,7 +6,11 @@ param location string
 param cdnLocation string
 param enableCosmosDbFreeTier bool
 param customDomain string
-param dnsResourceGroup string
+param apiCustomDomain string
+@description('The contact information about the APIM publisher.')
+param apimPublisher object
+@description('Information about the DNS Zone to use (resource group and name).')
+param dnsZone object
 @description('The default tags to assign to resources.')
 param defaultTags object
 
@@ -87,7 +91,7 @@ module cdnProfile 'modules/cdn/profile.bicep' = {
 
 module cdnDns 'modules/dns/cname.bicep' = {
   name: 'deploy-cdn-dns'
-  scope: resourceGroup(dnsResourceGroup)
+  scope: resourceGroup(dnsZone.resourceGroupName)
 
   params: {
     customDomain: customDomain
@@ -109,4 +113,53 @@ module cdnCustomDomain 'modules/cdn/customDomain.bicep' = {
   }
 
   dependsOn: [ cdnDns ]
+}
+
+module apimService 'modules/apim/service.bicep' = {
+  name: 'deploy-apim-service'
+
+  params: {
+    defaultTags: defaultTags
+    location: location
+    publisher: apimPublisher
+    uniqueSuffix: uniqueSuffix
+    deploymentScriptIdentity: deploymentScriptsIdentity.outputs.msi
+  }
+}
+
+module apimCname 'modules/dns/cname.bicep' = {
+  name: 'deploy-apim-dns-cname'
+  scope: resourceGroup(dnsZone.resourceGroupName)
+
+  params: {
+    customDomain: apiCustomDomain
+    targetHostname: apimService.outputs.serviceDefaultHost
+  }
+}
+
+module apimTxt 'modules/dns/txt.bicep' = {
+  name: 'deploy-apim-dns-txt'
+  scope: resourceGroup(dnsZone.resourceGroupName)
+
+  params: {
+    record: {
+      name: 'apimuid.${replace(apiCustomDomain, '.${dnsZone.name}', '')}'
+      value: apimService.outputs.domainOwnershipIdentifier
+    }
+    zoneName: dnsZone.name
+  }
+}
+
+module apimServiceWithCustomHostname 'modules/apim/serviceWithCustomHostname.bicep' = {
+  name: 'deploy-apim-service-full'
+
+  params: {
+    apiCustomDomain: apiCustomDomain
+    defaultTags: defaultTags
+    location: location
+    publisher: apimPublisher
+    uniqueSuffix: uniqueSuffix
+  }
+
+  dependsOn: [ apimCname, apimTxt ]
 }

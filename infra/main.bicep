@@ -13,11 +13,17 @@ param env string
 @description('Indicates if CosmosDb free tier should be enabled.')
 param enableCosmosDbFreeTier bool = false
 
-@description('The custom domain to use for the website')
+@description('The custom domain to use for the website.')
 param customDomain string
 
-@description('The name of the resource group containing the DNS zone.')
-param dnsResourceGroup string
+@description('The custom domain to use for the APIs.')
+param apiCustomDomain string
+
+@description('The contact information about the APIM publisher.')
+param apimPublisher object
+
+@description('Information about the DNS Zone to use (resource group and name).')
+param dnsZone object
 
 var suffix = '${env}-book-lender'
 var uniqueSuffix = '${suffix}-${uniqueString(subscription().id, env, location)}'
@@ -45,7 +51,9 @@ module resources 'resources.bicep' = {
     uniqueSuffix: uniqueSuffix
     enableCosmosDbFreeTier: enableCosmosDbFreeTier
     customDomain: customDomain
-    dnsResourceGroup: dnsResourceGroup
+    apiCustomDomain: apiCustomDomain
+    apimPublisher: apimPublisher
+    dnsZone: dnsZone
     defaultTags: tags
   }
 }

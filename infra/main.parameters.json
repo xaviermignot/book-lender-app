@@ -14,8 +14,20 @@
         "customDomain": {
             "value": "${CUSTOM_DOMAIN}"
         },
-        "dnsResourceGroup": {
-            "value": "${DNS_RESOURCE_GROUP}"
+        "apiCustomDomain": {
+            "value": "${API_CUSTOM_DOMAIN}"
+        },
+        "dnsZone": {
+            "value": {
+                "name": "${DNS_ZONE_NAME}",
+                "resourceGroupName": "${DNS_RESOURCE_GROUP_NAME}"
+            }
+        },
+        "apimPublisher": {
+            "value": {
+                "email": "${APIM_PUBLISHER_EMAIL}",
+                "name": "${APIM_PUBLISHER_NAME}"
+            }
         }
     }
 }

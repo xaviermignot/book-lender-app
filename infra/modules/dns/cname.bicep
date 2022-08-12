@@ -20,3 +20,6 @@ resource cnameRecord 'Microsoft.Network/dnsZones/CNAME@2018-05-01' = {
     }
   }
 }
+
+output dnsZoneName string = dnsZoneName
+output dnsRecord string = dnsCnameRecord
