@@ -85,7 +85,7 @@ module cdnProfile 'modules/cdn/profile.bicep' = {
   }
 }
 
-module cdnDns 'modules/cdn/dns.bicep' = {
+module cdnDns 'modules/dns/cname.bicep' = {
   name: 'deploy-cdn-dns'
   scope: resourceGroup(dnsResourceGroup)
 
