@@ -121,15 +121,14 @@ module cdnCustomDomain 'modules/cdn/customDomain.bicep' = {
   dependsOn: [ cdnDns ]
 }
 
-module apimService 'modules/apim/service.bicep' = {
-  name: 'deploy-apim-service'
+module apimPrerequisites 'modules/apim/prerequisites.bicep' = {
+  name: 'deploy-apim-prerequisites'
 
   params: {
     defaultTags: defaultTags
-    location: location
-    publisher: apimPublisher
-    uniqueSuffix: uniqueSuffix
     deploymentScriptIdentity: deploymentScriptsIdentity.outputs.msi
+    location: location
+    uniqueSuffix: uniqueSuffix
   }
 }
 
@@ -140,7 +139,7 @@ module apimCname 'modules/dns/cname.bicep' = {
   params: {
     record: {
       name: apiSubdomain
-      value: apimService.outputs.serviceDefaultHost
+      value: apimPrerequisites.outputs.serviceDefaultHostname
     }
     zoneName: dnsZone.name
   }
@@ -153,14 +152,14 @@ module apimTxt 'modules/dns/txt.bicep' = {
   params: {
     record: {
       name: 'apimuid.${apiSubdomain}'
-      value: apimService.outputs.domainOwnershipIdentifier
+      value: apimPrerequisites.outputs.domainOwnershipIdentifier
     }
     zoneName: dnsZone.name
   }
 }
 
-module apimServiceWithCustomHostname 'modules/apim/serviceWithCustomHostname.bicep' = {
-  name: 'deploy-apim-service-full'
+module apimService 'modules/apim/service.bicep' = {
+  name: 'deploy-apim-service'
 
   params: {
     apiCustomDomain: '${apiSubdomain}.${dnsZone.name}'
