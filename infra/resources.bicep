@@ -140,7 +140,7 @@ module apimCname 'modules/dns/cname.bicep' = {
   params: {
     record: {
       name: apiSubdomain
-      value: apimService.outputs.serviceDefaultHost
+      value: apimService.outputs.serviceDefaultHostname
     }
     zoneName: dnsZone.name
   }
@@ -159,15 +159,15 @@ module apimTxt 'modules/dns/txt.bicep' = {
   }
 }
 
-module apimServiceWithCustomHostname 'modules/apim/serviceWithCustomHostname.bicep' = {
-  name: 'deploy-apim-service-full'
+module apimCustomHostname 'modules/apim/customHostname.bicep' = {
+  name: 'deploy-apim-custom-hostname'
 
   params: {
+    serviceName: apimService.outputs.serviceName
     apiCustomDomain: '${apiSubdomain}.${dnsZone.name}'
     defaultTags: defaultTags
     location: location
     publisher: apimPublisher
-    uniqueSuffix: uniqueSuffix
   }
 
   dependsOn: [ apimCname, apimTxt ]

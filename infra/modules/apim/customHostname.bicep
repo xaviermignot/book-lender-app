@@ -1,5 +1,5 @@
-param uniqueSuffix string
 param location string
+param serviceName string
 param apiCustomDomain string
 @description('The default tags to assign to resources.')
 param defaultTags object
@@ -9,7 +9,7 @@ param publisher object
 var tags = union(defaultTags, { bicepModule: 'apim/service' })
 
 resource service 'Microsoft.ApiManagement/service@2021-08-01' = {
-  name: 'apim-${uniqueSuffix}'
+  name: serviceName
   location: location
   tags: tags
 

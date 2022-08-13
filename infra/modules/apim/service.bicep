@@ -51,5 +51,5 @@ resource getDomainOwnershipId 'Microsoft.Resources/deploymentScripts@2020-10-01'
 }
 
 output serviceName string = service.name
-output serviceDefaultHost string = replace(replace(service.properties.gatewayUrl, 'https://', ''), '/', '')
+output serviceDefaultHostname string = replace(replace(service.properties.gatewayUrl, 'https://', ''), '/', '')
 output domainOwnershipIdentifier string = getDomainOwnershipId.properties.outputs.domainOwnershipIdentifier
