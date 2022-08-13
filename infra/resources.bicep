@@ -105,11 +105,11 @@ module cdnDns 'modules/dns/cname.bicep' = {
   }
 }
 
-module cdnCustomDomain 'modules/cdn/customDomain.bicep' = {
-  name: 'deploy-cdn-custom-domain'
+module cdnCustomDomain 'modules/cdn/customHostname.bicep' = {
+  name: 'deploy-cdn-custom-hostname'
 
   params: {
-    customDomain: '${frontSubdomain}.${dnsZone.name}'
+    customHostname: '${frontSubdomain}.${dnsZone.name}'
     endpointName: cdnProfile.outputs.endpointName
     endpointFullName: cdnProfile.outputs.endpointFullName
     location: location
